@@ -50,6 +50,7 @@ class HGTEncoder(nn.Module):
         super().__init__()
         self.dropout = dropout
         self.proj = nn.ModuleDict()
+        self.ln = nn.ModuleDict()
         for ntype, in_dim in in_channels.items():
             self.proj[ntype] = nn.Sequential(
                 nn.Linear(in_dim, hidden_channels * 2),
@@ -58,7 +59,7 @@ class HGTEncoder(nn.Module):
                 nn.Dropout(dropout),
                 nn.Linear(hidden_channels * 2, hidden_channels),
             )
-
+            self.ln[ntype] = nn.LayerNorm(hidden_channels)
         self.convs = nn.ModuleList()
         for _ in range(num_layers):
             conv = HGTConv(
@@ -74,18 +75,26 @@ class HGTEncoder(nn.Module):
             ntype: F.dropout(self.proj[ntype](x), p=self.dropout, training=self.training)
             for ntype, x in x_dict.items()
         }
+ 
         for i, conv in enumerate(self.convs):
-            x_dict = conv(x_dict, edge_index_dict)
-            if i < len(self.convs) - 1:
-                x_dict = {
-                    ntype: F.dropout(F.elu(x), p=self.dropout, training=self.training)
-                    for ntype, x in x_dict.items()
-                }
-            else:
-                x_dict = {
-                    ntype: F.elu(x)
-                    for ntype, x in x_dict.items()
-                }
+           out_dict = conv(x_dict, edge_index_dict)
+	    # Apply dropout 
+        out_dict = {
+            ntype: F.dropout(out, p=self.dropout, training=self.training)
+            for ntype, out in out_dict.items()
+           }
+
+        new_x = {}
+        for ntype, out in out_dict.items():
+		 # Add skip connections
+            new_x[ntype] = self.ln[ntype](x_dict[ntype] + out)
+
+        # Activation except for last layer
+        if i < len(self.convs) - 1:
+            new_x = {ntype: F.relu(x) for ntype, x in new_x.items()}
+
+        x_dict = new_x
+
         return x_dict
 
 
