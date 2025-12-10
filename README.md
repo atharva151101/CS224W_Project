@@ -59,7 +59,7 @@ python HGT.py
 ```
 **If using graph statistics (Step 5):**
 ```bash
-
+python HGT.py --data_path imdb-hetero/data/processed/imdb_hetero_graph_with_stats.pt 
 ```
 **Output:** Model checkpoint and link prediction metrics
 
