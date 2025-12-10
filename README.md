@@ -73,6 +73,6 @@ python preprocess_to_artifacts.py --plot_encoded_json imdb-hetero/data/raw/plot_
 python build_pyg_graph.py
 python check_graph_and_make_splits.py --add_eigenvectors --num_eigenvectors 128
 python add_graph_statistics.py
-python train_rating_predictor.py --data_path imdb-hetero/data/processed/imdb_hetero_graph_with_stats.pt
-python HGT.py --data_path imdb-hetero/data/processed/imdb_hetero_graph_with_stats.pt 
+python train_rating_predictor.py --num_layers 3 --normalize_features --epochs 1000 --dropout 0.3
+python HGT_colab.py --hidden_channels 256 --num_layers 4 --normalize_features --epochs 50 --dropout 0.3 --top_k_candidates 2000 --loss_type bpr
 ```
