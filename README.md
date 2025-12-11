@@ -7,17 +7,26 @@
 
 ## Execution Order
 
-### 1. Encode Plot Data (Optional)
+### 1. Pre-process and Filter Data
+
+Run the collab notebook pre_process.ipynb
+
+
+### 2. Encode Plot Data (Optional)
 ```bash
 python plot_encoding.py
 ```
 **Output:** `imdb-hetero/data/raw/plot_data_encoded.json`
 
-### 2. Preprocess Raw Data
+### 3. Preprocess Raw Data
 ```bash
 python preprocess_to_artifacts.py
 ```
 **Output:** Feature files in `imdb-hetero/data/processed/` 
+
+### 4. Run Baseline Models (Optional)
+
+Run the collab notebook baseline_models.py
 
 ### 3. Build PyG Graph
 ```bash
