@@ -9,7 +9,7 @@
 
 ### 1. Pre-process and Filter Data
 
-Run the collab notebook pre_process.ipynb
+Run the collab notebook data_pre_processing.ipynb
 
 
 ### 2. Encode Plot Data (Optional)
@@ -26,7 +26,7 @@ python preprocess_to_artifacts.py
 
 ### 4. Run Baseline Models (Optional)
 
-Run the collab notebook baseline_models.py
+Run the collab notebook Baseline_Models.ipynb
 
 ### 3. Build PyG Graph
 ```bash
