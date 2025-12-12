@@ -13,76 +13,76 @@ from torch_geometric.utils import negative_sampling
 
 
 class RGCNEncoder(nn.Module):
-   def __init__(
-       self,
-       metadata,
-       in_channels: Dict[str, int],
-       hidden_channels: int = 128,
-       num_layers: int = 2,
-       dropout: float = 0.2,
-   ):
-       super().__init__()
-       self.hidden_channels = hidden_channels
-       self.dropout = dropout
-	# initial projection to project features to a common hidden_dim size
-       self.proj = nn.ModuleDict()
-       self.ln = nn.ModuleDict()
-       for ntype, in_dim in in_channels.items():
-           self.proj[ntype] = nn.Sequential(
-               nn.Linear(in_dim, hidden_channels),
-               nn.ReLU(),
-               nn.Dropout(dropout),
-           )
-           self.ln[ntype] = nn.LayerNorm(hidden_channels)
+    def __init__(
+        self,
+        metadata,
+        in_channels: Dict[str, int],
+        hidden_channels: int = 128,
+        num_layers: int = 2,
+        dropout: float = 0.2,
+    ):
+        super().__init__()
+        self.hidden_channels = hidden_channels
+        self.dropout = dropout
+        # initial projection to project features to a common hidden_dim size
+        self.proj = nn.ModuleDict()
+        self.ln = nn.ModuleDict()
+        for ntype, in_dim in in_channels.items():
+            self.proj[ntype] = nn.Sequential(
+                nn.Linear(in_dim, hidden_channels),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+            )
+            self.ln[ntype] = nn.LayerNorm(hidden_channels)
 
 
-       self.convs = nn.ModuleList()
-       for _ in range(num_layers):
-           conv_dict = {}
-	    # Create a SAGEConv operator for each relation type
-           for src, rel, dst in metadata[1]:
-               conv_dict[(src, rel, dst)] = SAGEConv(
-                   (hidden_channels, hidden_channels),
-                   hidden_channels,
-                   aggr='mean'
-               )
-  	    # Build the HeteroCOnv operator
-           conv = HeteroConv(conv_dict, aggr="mean")
-           self.convs.append(conv)
+        self.convs = nn.ModuleList()
+        for _ in range(num_layers):
+            conv_dict = {}
+            # Create a SAGEConv operator for each relation type
+            for src, rel, dst in metadata[1]:
+                conv_dict[(src, rel, dst)] = SAGEConv(
+                    (hidden_channels, hidden_channels),
+                    hidden_channels,
+                    aggr='mean'
+                )
+            # Build the HeteroCOnv operator
+            conv = HeteroConv(conv_dict, aggr="mean")
+            self.convs.append(conv)
 
 
-   def forward(self, x_dict, edge_index_dict):
-       # initial projection + dropout
-       x_dict = {
-           ntype: F.dropout(self.proj[ntype](x), p=self.dropout, training=self.training)
-           for ntype, x in x_dict.items()
-       }
+    def forward(self, x_dict, edge_index_dict):
+        # initial projection + dropout
+        x_dict = {
+            ntype: F.dropout(self.proj[ntype](x), p=self.dropout, training=self.training)
+            for ntype, x in x_dict.items()
+        }
 
 
-       for i, conv in enumerate(self.convs):
-           out_dict = conv(x_dict, edge_index_dict)
-	    # Apply dropout 
-           out_dict = {
-               ntype: F.dropout(out, p=self.dropout, training=self.training)
-               for ntype, out in out_dict.items()
-           }
+        for i, conv in enumerate(self.convs):
+            out_dict = conv(x_dict, edge_index_dict)
+            # Apply dropout 
+            out_dict = {
+                ntype: F.dropout(out, p=self.dropout, training=self.training)
+                for ntype, out in out_dict.items()
+            }
 
 
-           new_x = {}
-           for ntype, out in out_dict.items():
-		 # Add skip connections
-              new_x[ntype] = self.ln[ntype](x_dict[ntype] + out)
+            new_x = {}
+            for ntype, out in out_dict.items():
+            # Add skip connections
+                new_x[ntype] = self.ln[ntype](x_dict[ntype] + out)
 
 
-           # Activation except for last layer
-           if i < len(self.convs) - 1:
-               new_x = {ntype: F.relu(x) for ntype, x in new_x.items()}
+            # Activation except for last layer
+            if i < len(self.convs) - 1:
+                new_x = {ntype: F.relu(x) for ntype, x in new_x.items()}
 
 
-           x_dict = new_x
+            x_dict = new_x
 
 
-       return x_dict
+        return x_dict
 
 add_safe_globals([HeteroData])
 
@@ -740,7 +740,7 @@ def train(args: argparse.Namespace) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Train an HGT model for edge prediction (cast recommendation)."
+        description="Train an RGCN model for edge prediction (cast recommendation)."
     )
     parser.add_argument(
         "--data_path",
