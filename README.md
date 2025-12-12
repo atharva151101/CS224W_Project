@@ -53,9 +53,17 @@ python add_graph_statistics.py
 ### 6. Train Model
 
 **Option A: Rating Prediction (Node Regression)**
+
+HGT Model
 ```bash
 python train_rating_predictor.py
 ```
+
+RGCN Model
+```bash
+python train_rating_predictor_RGCN.py
+```
+
 **If using graph statistics (Step 5):**
 ```bash
 python train_rating_predictor.py --data_path imdb-hetero/data/processed/imdb_hetero_graph_with_stats.pt
@@ -63,9 +71,17 @@ python train_rating_predictor.py --data_path imdb-hetero/data/processed/imdb_het
 **Output:** `best_rating_predictor.pt`, `predictions.csv`
 
 **Option B: Link Prediction (Cast Recommendation)**
+
+HGT Model
 ```bash
 python HGT.py 
 ```
+
+RGCN Model
+```bash
+python RGCN.py 
+```
+
 **If using graph statistics (Step 5):**
 ```bash
 python HGT.py --data_path imdb-hetero/data/processed/imdb_hetero_graph_with_stats.pt 
